@@ -13,12 +13,12 @@ public class AnimationNavigator : MonoBehaviour
     private Dictionary<string, Vector2> animBlendParams;
     private Dictionary<string, float> animationTimings;
     private Dictionary<string, string[]> animCategories;
-    private Vector2 currentBlendParams, targetBlendParams;
+	private Vector2 currentBlendParams, targetBlendParams;
 
-    public GameObject AnimationButtonPrefab;
+	private List<GameObject> animationButtons;
+
+	public GameObject AnimationButtonPrefab;
     public GameObject CategoryButtonPrefab;
-
-    List<GameObject> animationButtons;
 
     void Start()
     {
@@ -34,7 +34,7 @@ public class AnimationNavigator : MonoBehaviour
         animBlendParams.Add("Silly Dancing", new Vector2(-1.0f, 1.5f));
         animBlendParams.Add("Twist Dance", new Vector2(-1.75f, 0.25f));
 
-        // Start off in the center of the paramter space
+        // Start off in the center of the parameter space
         currentBlendParams = targetBlendParams = new Vector2(0,0);
 
 
@@ -46,9 +46,8 @@ public class AnimationNavigator : MonoBehaviour
         animCategories.Add("Jumping", new[] { "Joyful Jump", "Jump Push Up" });
         animCategories.Add("Acting", new[] { "Old Man Idle", "Dying" });
 
-        GameObject panel = GameObject.Find("Category Panel");
 
-        /*
+		/*
         * Use a toggle group to maintain radio state
         * The toggle group system keeps track of selected button but
         * loses graphical quality, so there's a script added to the prefabs
@@ -56,8 +55,9 @@ public class AnimationNavigator : MonoBehaviour
         * that state is preserved. A more robust solution would manage the
         * color palette based on isOn state, but since these buttons are
         * never grayed out the interactability scheme is simple and works
-        */ 
-        ToggleGroup group = panel.GetComponent<ToggleGroup>();
+        */
+		GameObject panel = GameObject.Find("Category Panel");
+        ToggleGroup group = panel ? panel.GetComponent<ToggleGroup>() : null;
 
 		if (panel == null)
 		{
@@ -83,9 +83,15 @@ public class AnimationNavigator : MonoBehaviour
 		GameObject animationCharacter = GameObject.Find("AnimationCharacter");
 		characterAnimator = animationCharacter ? animationCharacter.GetComponent<Animator>() : null;
 
-		if (characterAnimator == null)
-		{
+        if (characterAnimator == null)
+        {
 			UnityEngine.Debug.LogError("Could not load animation character");
+			return;
+		}
+		
+        if (characterAnimator == null)
+		{
+			UnityEngine.Debug.LogError("Could not find animator component");
             return;
 		}
 
@@ -130,7 +136,7 @@ public class AnimationNavigator : MonoBehaviour
         /*
          * As with the category buttons, we use a toggle group to maintain radio
          * state among the animation buttons. This prefab also uses the interactable
-         * trick to maintain visual feedback of selected buttons
+         * approach to maintain visual feedback of selected buttons
          */
         GameObject panel = GameObject.Find("Dance Panel");
         ToggleGroup group = panel ? panel.GetComponent<ToggleGroup>() : null;
@@ -159,6 +165,10 @@ public class AnimationNavigator : MonoBehaviour
             if (animationTimings.TryGetValue(anim,out length))
             {
                 buttonOb.transform.GetChild(1).gameObject.GetComponent<TMP_Text>().text = string.Format("Length: {0} seconds", length.ToString("0.00"));
+			}
+            else
+            {
+				buttonOb.transform.GetChild(1).gameObject.GetComponent<TMP_Text>().text ="Length: unknown";
 			}
 			animationButtons.Add(buttonOb);
         }
